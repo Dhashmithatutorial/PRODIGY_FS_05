@@ -169,7 +169,7 @@ async function deletePost(postId) {
   }
 
   try {
-    await fetch(`http://localhost:5000/api/posts/${postId}`, {
+    await fetch(`https://vibesphere-a-social-media-application.onrender.com/api/posts/${postId}`, {
       method: "DELETE",
       headers: {
         "Authorization": "Bearer " + token
