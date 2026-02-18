@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fcadb0, #fad0c4);
+  min-height: 100vh;
+}
+.navbar {
+  background: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+.navbar a:hover {
+  color: #ff4d6d;
+}
+.card {
+  background: white;
+  width: 420px;
+  margin: 80px auto;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Profile Logout Button */
+.logout-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff7eb3, #ff758c);
+  color: white;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 117, 140, 0.4);
+}    
+  </style>
+</head>
+<body>
+  <div class="card">
+  <h2>My Profile</h2>
+  <p><strong>Name:</strong> Maggie</p>
+  <p><strong>Email:</strong> maggie11@gmail.com</p>
+  <p> Followers: 197 </p>
+  <p>Following: 349 </p>
+  <button onclick="logout-btn" onclick="Logout()">Logout</button>
+</div>
+
+<script>
+async function loadProfile() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/profile", {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const data = await response.json();
+
+    document.getElementById("name").innerText = data.name;
+    document.getElementById("email").innerText = data.email;
+
+  } catch (error) {
+    alert("Error loading profile");
+  }
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  alert("Logged out successfully!");
+  window.location.href = "login.html";
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>

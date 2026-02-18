@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Post</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fdb7ba, #fad0c4);
+  min-height: 100vh;
+}
+.navbar {
+  background: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+.navbar a:hover {
+  color: #ff4d6d;
+}
+.card {
+  background: white;
+  width: 420px;
+  margin: 80px auto;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin-top: 15px;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+textarea {
+  width: 100%;
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  resize: none;
+}
+   
+  </style>
+</head>
+<body>
+    <div class="navbar">
+  <a href="feed.html">Feed</a>
+  <a href="createPost.html">Create Post</a>
+  <a href="myposts.html">My Posts</a>
+  <a href="profile.html">Profile</a>
+  <a href="login.html" onclick="logout()">Logout</a>
+</div>
+
+
+<div class="card">
+  <h2>Create Post</h2>
+
+  <textarea id="text" placeholder="Write something..." rows="4"></textarea>
+  <input type="file" id="image">
+
+  <button onclick="createPost()">Post</button>
+
+  <p id="message"></p>
+</div>
+
+<script>
+async function createPost() {
+  const text = document.getElementById("text").value;
+  const image = document.getElementById("image").files[0];
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    document.getElementById("message").innerText = "Please login first!";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("text", text);
+  if (image) {
+    formData.append("image", image);
+  }
+
+  try {
+    const response = await fetch("http://localhost:5000/api/posts", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+    document.getElementById("message").innerText =
+      data.message || data.error;
+
+  } catch (error) {
+    document.getElementById("message").innerText =
+      "Error creating post";
+  }
+}
+function logout() {
+  localStorage.removeItem("token");
+}
+
+</script>
+
+</body>
+</html>

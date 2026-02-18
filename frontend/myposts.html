@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Posts</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #fdb3b5, #fad0c4);
+}
+
+/* Center feed */
+.feed-container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 0 15px;
+}
+
+/* Post Card */
+.post {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Image FIX */
+.post img {
+  width: 100%;
+  max-height: 350px;
+  object-fit: cover;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
+/* Buttons */
+.post button {
+  padding: 6px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.post button:first-child {
+  background: #ff7eb3;
+  color: white;
+}
+
+.post button:last-child {
+  background: #ff4d4d;
+  color: white;
+}
+
+/* Smooth animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+ 
+    
+  </style>
+</head>
+<body>
+
+<div class="feed-container">
+<h2>My Posts</h2>
+
+<div id="posts"></div>
+
+<script>
+async function loadMyPosts() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:5000/api/posts/myposts", {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const posts = await response.json();
+
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = "";
+
+    if (posts.length === 0) {
+      postsContainer.innerHTML = "<p>You have not created any posts yet.</p>";
+      return;
+    }
+
+    posts.forEach(post => {
+      const postDiv = document.createElement("div");
+      postDiv.className = "post";
+
+      postDiv.innerHTML = `
+        <p><strong>${new Date(post.createdAt).toLocaleString()}</strong></p>
+        <p id="text-${post._id}">${post.text}</p>
+        ${post.image ? `<img src="http://localhost:5000/uploads/${post.image}" />` : ""}
+
+        <button onclick="showEdit('${post._id}', \`${post.text}\`)">Edit</button>
+        <button onclick="deletePost('${post._id}')">Delete</button>
+
+        <div id="edit-area-${post._id}" style="display:none; margin-top:10px;">
+          <textarea id="edit-input-${post._id}" rows="3" style="width:100%;"></textarea>
+          <button onclick="updatePost('${post._id}')">Update</button>
+        </div>
+      `;
+
+      postsContainer.appendChild(postDiv);
+    });
+
+  } catch (error) {
+    alert("Error loading posts");
+  }
+}
+
+function showEdit(postId, currentText) {
+  const editArea = document.getElementById(`edit-area-${postId}`);
+  const editInput = document.getElementById(`edit-input-${postId}`);
+
+  editArea.style.display = "block";
+  editInput.value = currentText;
+}
+
+async function updatePost(postId) {
+  const token = localStorage.getItem("token");
+  const newText = document.getElementById(`edit-input-${postId}`).value;
+
+  if (!newText) {
+    alert("Post cannot be empty!");
+    return;
+  }
+
+  try {
+    await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ text: newText })
+    });
+
+    loadMyPosts();
+
+  } catch (error) {
+    alert("Error updating post");
+  }
+}
+
+async function deletePost(postId) {
+  const token = localStorage.getItem("token");
+
+  if (!confirm("Are you sure you want to delete this post?")) {
+    return;
+  }
+
+  try {
+    await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    loadMyPosts();
+
+  } catch (error) {
+    alert("Error deleting post");
+  }
+}
+
+loadMyPosts();
+</script>
+
+
+</body>
+</html>

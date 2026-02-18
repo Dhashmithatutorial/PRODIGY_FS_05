@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feed</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #fcbbbb, #fad0c4, #fad0c4);
+  background-attachment: fixed;
+}
+
+.navbar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.navbar a {
+  color: #2f3640;
+  margin: 0 20px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.navbar a:hover {
+  color: #e84393;
+}
+
+.app-title {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #2d3436;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #636e72;
+  margin-bottom: 30px;
+}
+
+#posts {
+  width: 40%;
+  margin: auto;
+}
+
+.post {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.post:hover {
+  transform: translateY(-5px);
+}
+
+.post img {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 15px;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 16px;
+  color: #6c5ce7;
+}
+
+.date {
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 10px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 16px;
+  color: #6c5ce7;
+}
+
+.date {
+  font-size: 12px;
+  color: gray;
+}
+
+.avatar {
+  width: 45px !important;
+  height: 45px !important;
+  border-radius: 50%;
+  object-fit: cover;
+}   
+.post {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 30px;
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  transition: 0.3s ease;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+}
+
+
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <a href="feed.html">Feed</a>
+  <a href="createPost.html">Create Post</a>
+  <a href="myposts.html">My Posts</a>
+  <a href="profile.html">Profile</a>
+  <a href="login.html" onclick="logout()">Logout</a>
+</div>
+
+<div class="app-title">💫 VibeSphere</div>
+<div class="subtitle">Where moments become memories.</div>
+
+<div id="posts"></div>
+
+
+<script>
+async function loadPosts() {
+  try {
+    const response = await fetch("http://localhost:5000/api/posts");
+    const posts = await response.json();
+
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = "";
+
+    posts.forEach((post, index) => {
+  const postDiv = document.createElement("div");
+  postDiv.classList.add("post");
+  postDiv.style.animationDelay = `${index * 0.1}s`;
+
+
+      const commentsHTML = post.comments.map(comment => `
+        <div style="margin-left:10px; font-size:14px;">
+          💬 ${comment.text}
+        </div>
+      `).join("");
+
+      postDiv.innerHTML = `
+        <div class="user-row">
+  <div class="user-info">
+    <span class="username">${post.user.name}</span>
+    <span class="date">${new Date(post.createdAt).toLocaleString()}</span>
+  </div>
+  <img class="avatar" src="https://ui-avatars.com/api/?name=${post.user.name}&background=6c5ce7&color=fff&size=128" />
+</div>
+
+        <div class="date">${new Date(post.createdAt).toLocaleString()}</div>
+        <p>${post.text}</p>
+        ${post.image ? `<img src="http://localhost:5000/uploads/${post.image}" />` : ""}
+        <p>❤️ ${post.likes.length} Likes</p>
+        <button onclick="likePost('${post._id}')">Like / Unlike</button>
+
+        <div style="margin-top:10px;">
+          <input type="text" id="comment-${post._id}" placeholder="Write a comment..." />
+          <button onclick="addComment('${post._id}')">Comment</button>
+        </div>
+
+        <div style="margin-top:5px;">
+          ${commentsHTML}
+        </div>
+      `;
+
+      postsContainer.appendChild(postDiv);
+    });
+
+  } catch (error) {
+    console.error("Error loading posts:", error);
+  }
+}
+
+async function likePost(postId) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login first!");
+    return;
+  }
+
+  try {
+    await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    loadPosts();
+
+  } catch (error) {
+    console.error("Error liking post:", error);
+  }
+}
+
+async function addComment(postId) {
+  const token = localStorage.getItem("token");
+  const commentInput = document.getElementById(`comment-${postId}`);
+  const text = commentInput.value;
+
+  if (!token) {
+    alert("Please login first!");
+    return;
+  }
+
+  if (!text) {
+    alert("Comment cannot be empty!");
+    return;
+  }
+
+  try {
+    await fetch(`http://localhost:5000/api/posts/${postId}/comment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ text })
+    });
+
+    commentInput.value = "";
+    loadPosts();
+
+  } catch (error) {
+    console.error("Error adding comment:", error);
+  }
+}
+function logout() {
+  localStorage.removeItem("token");
+}
+function goToCreate() {
+  window.location.href = "createPost.html";
+}
+
+
+loadPosts();
+</script>
+
+
+<button class="fab" onclick="goToCreate()">+</button>
+
+</body>
+</html>
