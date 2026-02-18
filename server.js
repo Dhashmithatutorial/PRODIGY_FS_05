@@ -34,3 +34,12 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+const path = require("path");
+
+// Serve static frontend folder
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// Default route → open register page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "register.html"));
+});
